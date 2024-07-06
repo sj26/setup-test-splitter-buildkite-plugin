@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+echo "~~~ Setup Buildkite Test Splitter"
+
+TEST_SPLITTER_VERSION="${BUILDKITE_PLUGIN_SETUP_TEST_SPLITTER_VERSION:-$(curl --silent --show-error "https://api.github.com/repos/buildkite/test-splitter/releases/latest" | jq --raw-output ".tag_name")}"
+
+if uname -s | grep -qi darwin; then
+  TEST_SPLITTER_OS="darwin"
+else
+  TEST_SPLITTER_OS="linux"
+fi
+
+if uname -m | grep -qi "arm64\|aarch64"; then
+  TEST_SPLITTER_ARCH="arm64"
+else
+  TEST_SPLITTER_ARCH="amd64"
+fi
+
+# TODO: If already installed at the correct version, skip installation.
+
+curl --silent --show-error --location "https://github.com/buildkite/test-splitter/releases/download/${TEST_SPLITTER_VERSION}/test-splitter-${TEST_SPLITTER_OS}-${TEST_SPLITTER_ARCH}" --output /usr/local/bin/test-splitter
+
+chmod 0755 /usr/local/bin/test-splitter
+
+test-splitter --version
